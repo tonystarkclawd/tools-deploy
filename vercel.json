@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/lead-magnets/:path*", "destination": "/lead-magnets/:path*" }
+  ]
+}

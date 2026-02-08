@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Second Brain Stack Builder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #dc2626;
+      --accent-light: #f87171;
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --bg-elevated: #1a1a1a;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --border: #222222;
+      --success: #22c55e;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 48px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+      position: relative;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(220, 38, 38, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    
+    .badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+    }
+    
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+    
+    .author {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+    }
+    
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    
+    .author-name { font-weight: 600; font-size: 14px; }
+    .author-site { font-size: 13px; color: var(--text-muted); }
+    
+    /* Progress */
+    .progress-bar {
+      background: var(--bg-card);
+      border-radius: 8px;
+      height: 8px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      transition: width 0.4s ease;
+      border-radius: 8px;
+    }
+    
+    .progress-text {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    
+    /* Questions */
+    .question-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    
+    .question-number {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    
+    .question-text {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+    
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .option {
+      background: var(--bg-elevated);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .option:hover {
+      border-color: var(--accent);
+      background: rgba(220, 38, 38, 0.05);
+    }
+    
+    .option.selected {
+      border-color: var(--accent);
+      background: rgba(220, 38, 38, 0.1);
+    }
+    
+    .option-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-card);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .option-content { flex: 1; }
+    .option-title { font-weight: 600; font-size: 15px; }
+    .option-desc { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    
+    /* Results */
+    .results {
+      display: none;
+    }
+    
+    .results.show { display: block; }
+    
+    .results-header {
+      text-align: center;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    
+    .results-header h2 {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    
+    .stack-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    
+    .stack-card-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .stack-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .stack-title { font-size: 20px; font-weight: 700; }
+    .stack-subtitle { font-size: 14px; color: var(--text-muted); }
+    
+    .stack-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .tool-tag {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .tool-tag.primary {
+      background: rgba(220, 38, 38, 0.1);
+      border-color: var(--accent);
+      color: var(--accent-light);
+    }
+    
+    .workflow-section {
+      margin-top: 32px;
+    }
+    
+    .workflow-section h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .workflow-step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .workflow-num {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .workflow-content {
+      flex: 1;
+      padding-top: 4px;
+    }
+    
+    .workflow-title { font-weight: 600; margin-bottom: 4px; }
+    .workflow-desc { font-size: 14px; color: var(--text-muted); }
+    
+    /* Tip box */
+    .tip-box {
+      background: rgba(220, 38, 38, 0.08);
+      border-left: 4px solid var(--accent);
+      padding: 20px;
+      border-radius: 0 12px 12px 0;
+      margin: 24px 0;
+    }
+    
+    .tip-box strong { color: var(--accent-light); }
+    .tip-box p { color: var(--text-muted); margin: 0; }
+    
+    /* CTA */
+    .cta {
+      background: linear-gradient(135deg, var(--accent), #b91c1c);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      margin: 32px 0;
+    }
+    
+    .cta h3 { font-size: 20px; margin-bottom: 8px; }
+    .cta p { color: rgba(255,255,255,0.85); margin-bottom: 16px; }
+    
+    .cta-btn {
+      display: inline-block;
+      background: white;
+      color: var(--accent);
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    
+    .cta-btn:hover { transform: translateY(-2px); }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 32px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    /* Navigation */
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .nav-btn {
+      flex: 1;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    
+    .nav-btn.secondary {
+      background: var(--bg-elevated);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .nav-btn.primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .nav-btn:hover { transform: translateY(-1px); }
+    .nav-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Hero -->
+    <header class="hero">
+      <span class="badge">Interactive Tool</span>
+      <h1>AI Second Brain<br>Stack Builder</h1>
+      <p>Answer 4 questions. Get your personalized AI knowledge system.</p>
+      <div class="author">
+        <div class="author-avatar">LV</div>
+        <div>
+          <div class="author-name">Luca Vizzielli</div>
+          <div class="author-site">lucavizzielli.com</div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Quiz Section -->
+    <div id="quiz">
+      <div class="progress-text">Question <span id="current-q">1</span> of 4</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress" style="width: 25%"></div>
+      </div>
+      
+      <div class="question-container" id="q-container">
+        <!-- Questions injected by JS -->
+      </div>
+      
+      <div class="nav-buttons">
+        <button class="nav-btn secondary" id="prev-btn" disabled>← Back</button>
+        <button class="nav-btn primary" id="next-btn" disabled>Next →</button>
+      </div>
+    </div>
+    
+    <!-- Results Section -->
+    <div class="results" id="results">
+      <div class="results-header">
+        <span class="badge" style="background: var(--success)">✓ Your Stack</span>
+        <h2>Your AI Second Brain</h2>
+        <p style="color: var(--text-muted)">Based on your workflow preferences</p>
+      </div>
+      
+      <div id="stack-output">
+        <!-- Results injected by JS -->
+      </div>
+      
+      <div class="cta">
+        <h3>Want the full setup guide?</h3>
+        <p>Connect with me for daily AI productivity systems.</p>
+        <a href="https://linkedin.com/in/lucavizzielli" class="cta-btn">Connect on LinkedIn</a>
+      </div>
+    </div>
+    
+    <footer class="footer">
+      © 2026 Luca Vizzielli · lucavizzielli.com
+    </footer>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        q: "What's your primary content input?",
+        opts: [
+          { icon: "📄", title: "Articles & Documents", desc: "PDFs, web pages, research papers", value: "docs" },
+          { icon: "🎧", title: "Audio & Video", desc: "Podcasts, meetings, YouTube", value: "media" },
+          { icon: "💬", title: "Notes & Ideas", desc: "Quick thoughts, meeting notes", value: "notes" },
+          { icon: "🔗", title: "Everything", desc: "All of the above, mixed", value: "all" }
+        ]
+      },
+      {
+        q: "How do you prefer to retrieve knowledge?",
+        opts: [
+          { icon: "🔍", title: "Search & Query", desc: "Ask questions, get answers", value: "search" },
+          { icon: "🕸️", title: "Visual Connections", desc: "See how ideas link together", value: "graph" },
+          { icon: "📋", title: "Structured Lists", desc: "Tags, folders, organized views", value: "structured" },
+          { icon: "🤖", title: "AI Surfaces It", desc: "Let AI find what's relevant", value: "ai-auto" }
+        ]
+      },
+      {
+        q: "What's your budget comfort zone?",
+        opts: [
+          { icon: "🆓", title: "Free Only", desc: "Open source / free tiers", value: "free" },
+          { icon: "💵", title: "$10-20/month", desc: "Individual pro plans", value: "low" },
+          { icon: "💰", title: "$50+/month", desc: "Premium tools, multiple services", value: "high" }
+        ]
+      },
+      {
+        q: "What's your tech comfort level?",
+        opts: [
+          { icon: "🟢", title: "Keep It Simple", desc: "Works out of the box, no setup", value: "simple" },
+          { icon: "🟡", title: "Some Tinkering", desc: "OK with plugins & light config", value: "medium" },
+          { icon: "🔴", title: "Power User", desc: "Self-hosted, APIs, full control", value: "power" }
+        ]
+      }
+    ];
+    
+    let current = 0;
+    let answers = {};
+    
+    const qContainer = document.getElementById('q-container');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const progress = document.getElementById('progress');
+    const currentQ = document.getElementById('current-q');
+    const quiz = document.getElementById('quiz');
+    const results = document.getElementById('results');
+    const stackOutput = document.getElementById('stack-output');
+    
+    function renderQuestion() {
+      const q = questions[current];
+      currentQ.textContent = current + 1;
+      progress.style.width = ((current + 1) / questions.length * 100) + '%';
+      
+      let html = `
+        <div class="question-number">Question ${current + 1}</div>
+        <div class="question-text">${q.q}</div>
+        <div class="options">
+      `;
+      
+      q.opts.forEach((opt, i) => {
+        const selected = answers[current] === opt.value ? 'selected' : '';
+        html += `
+          <div class="option ${selected}" data-value="${opt.value}" onclick="selectOption(this, '${opt.value}')">
+            <div class="option-icon">${opt.icon}</div>
+            <div class="option-content">
+              <div class="option-title">${opt.title}</div>
+              <div class="option-desc">${opt.desc}</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      qContainer.innerHTML = html;
+      
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = answers[current] === undefined;
+      nextBtn.textContent = current === questions.length - 1 ? 'See My Stack →' : 'Next →';
+    }
+    
+    function selectOption(el, value) {
+      document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      answers[current] = value;
+      nextBtn.disabled = false;
+    }
+    
+    function getStack() {
+      const a = answers;
+      let stack = { primary: '', tools: [], workflow: [], tip: '' };
+      
+      // Determine primary tool based on answers
+      if (a[3] === 'simple') {
+        if (a[2] === 'free') {
+          stack.primary = 'NotebookLM';
+          stack.tools = ['NotebookLM', 'Google Keep', 'Readwise Reader (free)'];
+        } else {
+          stack.primary = 'Notion AI';
+          stack.tools = ['Notion AI', 'Readwise', 'Snipd'];
+        }
+      } else if (a[3] === 'medium') {
+        if (a[1] === 'graph') {
+          stack.primary = 'Obsidian + AI plugins';
+          stack.tools = ['Obsidian', 'Smart Connections', 'Readwise', 'Whisper'];
+        } else {
+          stack.primary = 'Capacities';
+          stack.tools = ['Capacities', 'Mem.ai', 'Readwise', 'Claude'];
+        }
+      } else {
+        stack.primary = 'Obsidian + Local LLM';
+        stack.tools = ['Obsidian', 'Ollama', 'RAG pipeline', 'n8n', 'Whisper'];
+      }
+      
+      // Adjust for content type
+      if (a[0] === 'media') {
+        stack.tools.push('Snipd (podcasts)');
+        stack.tools.push('Whisper AI');
+      } else if (a[0] === 'docs') {
+        stack.tools.push('Readwise Reader');
+      }
+      
+      // Workflow based on retrieval preference
+      if (a[1] === 'search') {
+        stack.workflow = [
+          { title: 'Capture', desc: 'Save content to your inbox (browser extension, mobile app)' },
+          { title: 'Process', desc: 'AI extracts key points & generates summary' },
+          { title: 'Query', desc: 'Ask natural language questions across all your notes' },
+          { title: 'Create', desc: 'AI drafts content from your knowledge base' }
+        ];
+      } else if (a[1] === 'graph') {
+        stack.workflow = [
+          { title: 'Capture', desc: 'Atomic notes with clear titles' },
+          { title: 'Link', desc: 'Connect related ideas with [[wikilinks]]' },
+          { title: 'Visualize', desc: 'Graph view reveals unexpected connections' },
+          { title: 'Explore', desc: 'Follow links to rediscover buried insights' }
+        ];
+      } else {
+        stack.workflow = [
+          { title: 'Inbox', desc: 'Everything goes to one place first' },
+          { title: 'Tag', desc: 'AI suggests categories, you confirm' },
+          { title: 'Review', desc: 'Weekly review surfaces forgotten gems' },
+          { title: 'Apply', desc: 'Pull knowledge when you need it' }
+        ];
+      }
+      
+      // Tips
+      if (a[2] === 'free') {
+        stack.tip = "Start with NotebookLM - it's free, powerful, and handles 500+ sources. Upgrade later when you hit limits.";
+      } else if (a[3] === 'power') {
+        stack.tip = "Run Ollama locally for privacy. Your notes never leave your machine, and there's no API cost.";
+      } else {
+        stack.tip = "The best system is one you actually use. Start simple, add complexity only when needed.";
+      }
+      
+      return stack;
+    }
+    
+    function showResults() {
+      const stack = getStack();
+      quiz.classList.add('hidden');
+      results.classList.add('show');
+      
+      let workflowHtml = '';
+      stack.workflow.forEach((step, i) => {
+        workflowHtml += `
+          <div class="workflow-step">
+            <div class="workflow-num">${i + 1}</div>
+            <div class="workflow-content">
+              <div class="workflow-title">${step.title}</div>
+              <div class="workflow-desc">${step.desc}</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      stackOutput.innerHTML = `
+        <div class="stack-card">
+          <div class="stack-card-header">
+            <div class="stack-icon">🧠</div>
+            <div>
+              <div class="stack-title">${stack.primary}</div>
+              <div class="stack-subtitle">Your recommended core tool</div>
+            </div>
+          </div>
+          <div class="stack-tools">
+            ${stack.tools.map((t, i) => `<span class="tool-tag ${i === 0 ? 'primary' : ''}">${t}</span>`).join('')}
+          </div>
+        </div>
+        
+        <div class="workflow-section">
+          <h3>Your Daily Workflow</h3>
+          ${workflowHtml}
+        </div>
+        
+        <div class="tip-box">
+          <p><strong>Pro tip:</strong> ${stack.tip}</p>
+        </div>
+      `;
+    }
+    
+    prevBtn.onclick = () => { if (current > 0) { current--; renderQuestion(); } };
+    nextBtn.onclick = () => {
+      if (current < questions.length - 1) { current++; renderQuestion(); }
+      else { showResults(); }
+    };
+    
+    renderQuestion();
+  </script>
+</body>
+</html>
