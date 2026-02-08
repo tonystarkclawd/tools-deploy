@@ -644,6 +644,25 @@
         <div class="tip-box">
           <p><strong>Pro tip:</strong> ${stack.tip}</p>
         </div>
+        
+        ${answers[3] === 'power' ? `
+        <div class="stack-card" style="margin-top: 20px; border: 1px solid var(--accent);">
+          <div class="stack-card-header">
+            <div class="stack-icon">⚡</div>
+            <div>
+              <div class="stack-title">OpenClaw — The AI Layer</div>
+              <div class="stack-subtitle">For power users who want full control</div>
+            </div>
+          </div>
+          <p style="color: var(--text-muted); font-size: 14px; line-height: 1.6; margin: 12px 0;">
+            Connect your entire stack — Obsidian, Notion, Gmail, Calendar — under one self-hosted AI agent. 
+            Private, extensible, yours. No vendor lock-in, no data leaving your machine.
+          </p>
+          <a href="https://www.linkedin.com/in/luca-vizzielli" target="_blank" class="cta-btn" style="display: inline-block; text-align: center; margin-top: 8px;">
+            Need help setting it up? Let's connect on LinkedIn
+          </a>
+        </div>
+        ` : ''}
       `;
     }
     
