@@ -608,6 +608,7 @@
       const stack = getStack();
       quiz.classList.add('hidden');
       results.classList.add('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       
       let workflowHtml = '';
       stack.workflow.forEach((step, i) => {

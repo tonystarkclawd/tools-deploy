@@ -547,6 +547,7 @@ openclaw start --all-agents`,
       questions[current].classList.remove('active');
       document.getElementById('header').style.display = 'none';
       document.getElementById('progress-wrap').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       
       let tier;
       if (score <= 8) tier = 'basic';
