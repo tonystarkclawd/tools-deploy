@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools — Luca Vizzielli</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    .mars { width: 64px; height: 64px; margin-bottom: 16px; }
+    h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+    .subtitle { color: #999; font-size: 15px; margin-bottom: 40px; }
+    .tools-list { display: flex; flex-direction: column; gap: 12px; }
+    .tool-link {
+      display: block;
+      padding: 20px 24px;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      text-align: left;
+      transition: all 0.2s;
+    }
+    .tool-link:hover { border-color: #dc2626; background: #1a1a1a; }
+    .tool-name { font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+    .tool-desc { color: #888; font-size: 13px; }
+    .tool-badge {
+      display: inline-block;
+      background: #dc2626;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .footer { margin-top: 48px; color: #555; font-size: 13px; }
+    .footer a { color: #dc2626; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="lead-magnets/mars-symbol.png" alt="Mars" class="mars">
+    <h1>Free AI Tools</h1>
+    <p class="subtitle">Interactive tools to level up your workflow</p>
+    
+    <div class="tools-list">
+      <a href="/lead-magnets/second-brain-builder.html" class="tool-link">
+        <span class="tool-badge">NEW</span>
+        <div class="tool-name">🧠 AI Second Brain Stack Builder</div>
+        <div class="tool-desc">Answer 4 questions, get your personalized AI knowledge system.</div>
+      </a>
+    </div>
+    
+    <div class="footer">
+      Built by <a href="https://www.linkedin.com/in/luca-vizzielli" target="_blank">Luca Vizzielli</a> · <a href="https://lucavizzielli.com" target="_blank">lucavizzielli.com</a>
+    </div>
+  </div>
+</body>
+</html>
