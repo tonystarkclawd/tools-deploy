@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>First 1000 Followers Audit | LinkedIn Profile Scorecard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #dc2626;
+      --accent-dark: #b91c1c;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --bg: #0a0a0a;
+      --bg-card: #111111;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --border: #222222;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    
+    .hero {
+      text-align: center;
+      padding: 40px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+    
+    .hero-badge {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 40px);
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    
+    .hero p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    
+    /* Progress bar */
+    .progress-container {
+      margin-bottom: 32px;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.3s ease;
+      border-radius: 3px;
+    }
+    
+    .progress-text {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    /* Question card */
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      display: none;
+    }
+    
+    .question-card.active { display: block; }
+    
+    .question-number {
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    
+    .question-text {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .option {
+      background: #1a1a1a;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .option:hover {
+      border-color: var(--accent);
+      background: rgba(0, 119, 181, 0.1);
+    }
+    
+    .option.selected {
+      border-color: var(--accent);
+      background: rgba(0, 119, 181, 0.15);
+    }
+    
+    .option-circle {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .option.selected .option-circle {
+      border-color: var(--accent);
+      background: var(--accent);
+    }
+    
+    .option.selected .option-circle::after {
+      content: "✓";
+      color: white;
+      font-size: 14px;
+    }
+    
+    .option-text {
+      font-size: 16px;
+    }
+    
+    /* Navigation */
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 24px;
+    }
+    
+    .btn {
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    
+    .btn-secondary {
+      background: var(--border);
+      color: var(--text);
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-dark);
+      transform: translateY(-2px);
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Results */
+    .results-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      display: none;
+    }
+    
+    .results-card.active { display: block; }
+    
+    .score-circle {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    
+    .score-circle.high {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+      border: 4px solid var(--success);
+    }
+    
+    .score-circle.medium {
+      background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(234, 179, 8, 0.1));
+      border: 4px solid var(--warning);
+    }
+    
+    .score-circle.low {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+      border: 4px solid var(--danger);
+    }
+    
+    .score-number {
+      font-size: 48px;
+      font-weight: 800;
+    }
+    
+    .score-label {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    
+    .results-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .results-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+    
+    .recommendations {
+      text-align: left;
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    
+    .recommendations h4 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+    
+    .rec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .rec-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    
+    .rec-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .rec-text {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    
+    .rec-text strong {
+      color: var(--text);
+    }
+    
+    .cta-box {
+      background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+      border-radius: 12px;
+      padding: 24px;
+    }
+    
+    .cta-box h4 {
+      color: white;
+      margin-bottom: 8px;
+    }
+    
+    .cta-box p {
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    
+    .cta-button {
+      display: inline-block;
+      background: white;
+      color: var(--accent);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-2px);
+    }
+    
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 32px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    
+    .footer-text {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .author-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    
+    .author-tag a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <header class="hero">
+      <span class="hero-badge">Free Audit Tool</span>
+      <h1>First 1000 Followers Audit</h1>
+      <p>Score your LinkedIn profile readiness. Get personalized fixes. Start growing today.</p>
+    </header>
+    
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+      <div class="progress-text" id="progressText">Question 1 of 8</div>
+    </div>
+    
+    <!-- Questions -->
+    <div id="questionsContainer">
+      
+      <div class="question-card active" data-question="1">
+        <div class="question-number">Question 1</div>
+        <div class="question-text">Does your headline clearly state WHO you help and HOW?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Yes — "I help [target] achieve [outcome]"</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">Kind of — it mentions my role but not the outcome</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">It's just my job title (e.g., "Marketing Manager")</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">I haven't really thought about it</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="question-card" data-question="2">
+        <div class="question-number">Question 2</div>
+        <div class="question-text">How often do you post content on LinkedIn?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Daily or 4-5x per week</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">2-3 times per week</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">Once a week or less</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">Rarely or never</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="question-card" data-question="3">
+        <div class="question-number">Question 3</div>
+        <div class="question-text">Do you reply to comments on your posts within 1 hour?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Always — I prioritize engagement</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">Usually within a few hours</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">Next day or whenever I remember</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">I don't reply to comments</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="question-card" data-question="4">
+        <div class="question-number">Question 4</div>
+        <div class="question-text">Do you actively comment on other creators' posts?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Yes, 10-20 thoughtful comments daily</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">A few times a week</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">Occasionally when something catches my eye</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">Almost never</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="question-card" data-question="5">
+        <div class="question-number">Question 5</div>
+        <div class="question-text">Is your profile photo professional and recent?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Yes — clear face, good lighting, looks approachable</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">It's okay but could be better</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">It's old or not great quality</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">No photo or using a logo</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="question-card" data-question="6">
+        <div class="question-number">Question 6</div>
+        <div class="question-text">Does your About section tell your story AND include a CTA?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Yes — personal story + clear next step</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">Has a story but no clear CTA</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">Just a boring resume summary</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">Empty or minimal</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="question-card" data-question="7">
+        <div class="question-number">Question 7</div>
+        <div class="question-text">Do you have a "content pillar" strategy?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Yes — I have 3-5 clear topics I own</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">Mostly — but I sometimes go off-topic</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">I post about whatever feels relevant</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">What's a content pillar?</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="question-card" data-question="8">
+        <div class="question-number">Question 8</div>
+        <div class="question-text">Do your posts have strong hooks (first line)?</div>
+        <div class="options">
+          <div class="option" data-score="3">
+            <div class="option-circle"></div>
+            <div class="option-text">Yes — I spend serious time on hooks</div>
+          </div>
+          <div class="option" data-score="2">
+            <div class="option-circle"></div>
+            <div class="option-text">Sometimes they land, sometimes not</div>
+          </div>
+          <div class="option" data-score="1">
+            <div class="option-circle"></div>
+            <div class="option-text">I just start writing without a hook strategy</div>
+          </div>
+          <div class="option" data-score="0">
+            <div class="option-circle"></div>
+            <div class="option-text">I don't think about hooks at all</div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <div class="nav-buttons" id="navButtons">
+      <button class="btn btn-secondary" id="prevBtn" disabled>← Back</button>
+      <button class="btn btn-primary" id="nextBtn" disabled>Next →</button>
+    </div>
+    
+    <!-- Results -->
+    <div class="results-card" id="resultsCard">
+      <div class="score-circle" id="scoreCircle">
+        <div class="score-number" id="scoreNumber">0</div>
+        <div class="score-label">out of 24</div>
+      </div>
+      <h3 class="results-title" id="resultsTitle">Your Score</h3>
+      <p class="results-subtitle" id="resultsSubtitle">Here's what we found.</p>
+      
+      <div class="recommendations" id="recommendations">
+        <h4>🎯 Your Priority Fixes</h4>
+        <div id="recList"></div>
+      </div>
+      
+      <div class="cta-box">
+        <h4>Want the full playbook?</h4>
+        <p>Follow me for daily tips on building your audience (without the BS).</p>
+        <a href="https://linkedin.com/in/lucavizzielli" class="cta-button">Connect on LinkedIn</a>
+      </div>
+    </div>
+    
+    <footer class="footer">
+      <p class="footer-text">Built for solopreneurs who want growth without the fluff.</p>
+      <div class="author-tag">
+        by <a href="https://linkedin.com/in/lucavizzielli">Luca Vizzielli</a> • lucavizzielli.com
+      </div>
+    </footer>
+    
+  </div>
+
+  <script>
+    const questions = document.querySelectorAll('.question-card');
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const navButtons = document.getElementById('navButtons');
+    const resultsCard = document.getElementById('resultsCard');
+    
+    let currentQuestion = 0;
+    const answers = new Array(8).fill(null);
+    
+    // Recommendations based on low scores
+    const recommendations = {
+      1: { icon: "✏️", text: "<strong>Fix your headline first.</strong> Use this formula: 'I help [target audience] [achieve outcome] through [method].' This is the #1 factor for profile visits." },
+      2: { icon: "📅", text: "<strong>Start posting consistently.</strong> The algorithm rewards consistency over virality. Aim for 3-5x per week. Use a content calendar." },
+      3: { icon: "💬", text: "<strong>Reply to comments within 60 minutes.</strong> Early engagement signals boost your reach 2-3x. Set notification alerts." },
+      4: { icon: "🎯", text: "<strong>Comment on 10-20 posts daily.</strong> Thoughtful comments on big accounts = free exposure to their audience. This is your fastest growth lever." },
+      5: { icon: "📸", text: "<strong>Get a professional photo.</strong> Clear face, neutral background, genuine smile. This single change can increase connection requests 40%." },
+      6: { icon: "📝", text: "<strong>Rewrite your About section.</strong> Tell your story (struggle → solution → success), then add a clear CTA. Make people WANT to connect." },
+      7: { icon: "🏛️", text: "<strong>Define 3-5 content pillars.</strong> Pick topics you can own. Post about them consistently. Become known for something specific." },
+      8: { icon: "🪝", text: "<strong>Spend 50% of writing time on hooks.</strong> Your first line determines everything. Use patterns like: 'Most people think X. Reality: Y.'" }
+    };
+    
+    function updateProgress() {
+      const progress = ((currentQuestion + 1) / 8) * 100;
+      progressFill.style.width = `${progress}%`;
+      progressText.textContent = `Question ${currentQuestion + 1} of 8`;
+    }
+    
+    function showQuestion(index) {
+      questions.forEach((q, i) => {
+        q.classList.toggle('active', i === index);
+      });
+      prevBtn.disabled = index === 0;
+      updateProgress();
+      updateNextButton();
+    }
+    
+    function updateNextButton() {
+      nextBtn.disabled = answers[currentQuestion] === null;
+      nextBtn.textContent = currentQuestion === 7 ? 'See Results' : 'Next →';
+    }
+    
+    function calculateResults() {
+      const total = answers.reduce((sum, val) => sum + (val || 0), 0);
+      const scoreCircle = document.getElementById('scoreCircle');
+      const scoreNumber = document.getElementById('scoreNumber');
+      const resultsTitle = document.getElementById('resultsTitle');
+      const resultsSubtitle = document.getElementById('resultsSubtitle');
+      const recList = document.getElementById('recList');
+      
+      scoreNumber.textContent = total;
+      
+      // Determine level
+      let level, title, subtitle;
+      if (total >= 20) {
+        level = 'high';
+        title = "You're Ready to Scale 🚀";
+        subtitle = "Your fundamentals are solid. Now focus on consistency and doubling down on what works.";
+      } else if (total >= 12) {
+        level = 'medium';
+        title = "Good Foundation, Gaps to Fill 🔧";
+        subtitle = "You've got some things right. Fix these issues to accelerate your growth.";
+      } else {
+        level = 'low';
+        title = "Time to Rebuild 🏗️";
+        subtitle = "No shame — we all start somewhere. These fixes will transform your profile.";
+      }
+      
+      scoreCircle.className = `score-circle ${level}`;
+      resultsTitle.textContent = title;
+      resultsSubtitle.textContent = subtitle;
+      
+      // Generate recommendations (for questions with low scores)
+      recList.innerHTML = '';
+      answers.forEach((score, index) => {
+        if (score <= 1) {
+          const rec = recommendations[index + 1];
+          recList.innerHTML += `
+            <div class="rec-item">
+              <span class="rec-icon">${rec.icon}</span>
+              <span class="rec-text">${rec.text}</span>
+            </div>
+          `;
+        }
+      });
+      
+      // If all scores are good, show encouragement
+      if (recList.innerHTML === '') {
+        recList.innerHTML = `
+          <div class="rec-item">
+            <span class="rec-icon">⭐</span>
+            <span class="rec-text"><strong>Keep doing what you're doing!</strong> Your profile is optimized. Focus on consistent posting and engagement to hit 1000 followers faster.</span>
+          </div>
+        `;
+      }
+    }
+    
+    function showResults() {
+      document.getElementById('questionsContainer').style.display = 'none';
+      navButtons.style.display = 'none';
+      document.querySelector('.progress-container').style.display = 'none';
+      resultsCard.classList.add('active');
+      calculateResults();
+    }
+    
+    // Option selection
+    document.querySelectorAll('.option').forEach(option => {
+      option.addEventListener('click', function() {
+        const questionCard = this.closest('.question-card');
+        questionCard.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        answers[currentQuestion] = parseInt(this.dataset.score);
+        updateNextButton();
+      });
+    });
+    
+    // Navigation
+    prevBtn.addEventListener('click', () => {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion(currentQuestion);
+      }
+    });
+    
+    nextBtn.addEventListener('click', () => {
+      if (currentQuestion < 7) {
+        currentQuestion++;
+        showQuestion(currentQuestion);
+      } else {
+        showResults();
+      }
+    });
+    
+    // Initialize
+    showQuestion(0);
+  </script>
+</body>
+</html>

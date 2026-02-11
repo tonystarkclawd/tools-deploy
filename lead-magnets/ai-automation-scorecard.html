@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Automation Readiness Scorecard | Luca Vizzielli</title>
+  <meta property="og:title" content="Are You Ready for AI Automation?">
+  <meta property="og:description" content="8 questions. Your personalized automation toolkit + prompts.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #dc2626;
+      --accent-light: #ea8685;
+      --accent-glow: rgba(220, 38, 38, 0.3);
+      --bg: #000000;
+      --bg-card: #0a0a0a;
+      --bg-code: #111111;
+      --text: #ffffff;
+      --text-muted: #888888;
+      --border: #1a1a1a;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --blue: #3b82f6;
+      --purple: #a855f7;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .bg-glow {
+      position: fixed;
+      top: -200px;
+      right: -200px;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 65%);
+      opacity: 0.1;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: pulse 8s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.1; transform: scale(1); }
+      50% { opacity: 0.15; transform: scale(1.05); }
+    }
+    
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 32px 0 40px;
+    }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      padding: 8px 16px;
+      border-radius: 24px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+    
+    .header h1 {
+      font-size: clamp(28px, 5vw, 44px);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, var(--accent-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .header p {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    
+    .header .value-props {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    
+    .value-prop {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--bg-card);
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    
+    /* Progress */
+    .progress-wrap {
+      margin-bottom: 32px;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      border-radius: 3px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    /* Questions */
+    .question {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    .question.active { display: block; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .q-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+    }
+    
+    .q-num {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .q-text {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    
+    .q-hint {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+    }
+    
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .option {
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    
+    .option:hover {
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+    
+    .option.selected {
+      border-color: var(--accent);
+      background: rgba(220, 38, 38, 0.1);
+    }
+    
+    .option-dot {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .option.selected .option-dot {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    
+    .option.selected .option-dot::after {
+      content: '✓';
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .option-content {
+      flex: 1;
+    }
+    
+    .option-label {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    
+    .option-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    /* Results */
+    .results {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .results.active { display: block; }
+    
+    .result-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+    }
+    
+    .result-hero {
+      padding: 48px 32px;
+      text-align: center;
+      background: linear-gradient(180deg, rgba(220,38,38,0.1) 0%, transparent 100%);
+    }
+    
+    .score-ring {
+      width: 140px;
+      height: 140px;
+      margin: 0 auto 24px;
+      position: relative;
+    }
+    
+    .score-ring svg {
+      transform: rotate(-90deg);
+    }
+    
+    .score-ring-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 8;
+    }
+    
+    .score-ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 377;
+      stroke-dashoffset: 377;
+      transition: stroke-dashoffset 1s ease;
+    }
+    
+    .score-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 36px;
+      font-weight: 800;
+    }
+    
+    .score-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-weight: 700;
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .tier-desc {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    /* Toolkit Section */
+    .toolkit {
+      padding: 32px;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .tool-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    
+    .tool-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    
+    .tool-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+    
+    .tool-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+    
+    .tool-info h4 {
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+    
+    .tool-info span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .tool-tag {
+      margin-left: auto;
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+    
+    .tool-tag.paid {
+      background: rgba(234, 179, 8, 0.15);
+      color: var(--yellow);
+    }
+    
+    .tool-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    
+    .tool-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    
+    .tool-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Prompts */
+    .prompts-section {
+      padding: 0 32px 32px;
+    }
+    
+    .prompt-card {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .prompt-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .prompt-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .copy-btn {
+      background: var(--border);
+      border: none;
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .copy-btn:hover {
+      background: var(--accent);
+    }
+    
+    .copy-btn.copied {
+      background: var(--green);
+    }
+    
+    .prompt-body {
+      padding: 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    /* Implementation Steps */
+    .steps-section {
+      padding: 0 32px 32px;
+    }
+    
+    .step-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .step-num {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    
+    .step-content h4 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .step-content p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    /* CTA */
+    .cta-section {
+      padding: 32px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    
+    .cta-text {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px var(--accent-glow);
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: 48px;
+      text-align: center;
+      padding-bottom: 32px;
+    }
+    
+    .footer-brand {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .footer-tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    @media (max-width: 600px) {
+      .container { padding: 24px 16px; }
+      .q-card { padding: 28px 20px; }
+      .result-hero { padding: 36px 20px; }
+      .toolkit, .prompts-section, .steps-section, .cta-section { padding-left: 20px; padding-right: 20px; }
+      .value-props { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  
+  <div class="container">
+    <header class="header" id="header">
+      <div class="badge">⚡ Free Assessment</div>
+      <h1>Are You Ready for AI Automation?</h1>
+      <p>8 questions → Your score + personalized toolkit with prompts, tools, and step-by-step implementation.</p>
+      <div class="value-props">
+        <div class="value-prop">🛠️ Tool recommendations</div>
+        <div class="value-prop">📝 Copy-paste prompts</div>
+        <div class="value-prop">📋 Implementation steps</div>
+      </div>
+    </header>
+    
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress" style="width: 0%"></div>
+      </div>
+      <div class="progress-label">
+        <span id="progress-text">Question 1 of 8</span>
+        <span id="progress-pct">0%</span>
+      </div>
+    </div>
+    
+    <!-- Q1 -->
+    <div class="question active" data-q="1">
+      <div class="q-card">
+        <span class="q-num">1/8</span>
+        <div class="q-text">How much time do you spend on repetitive tasks daily?</div>
+        <div class="q-hint">Email replies, data entry, scheduling, follow-ups...</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="time">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">4+ hours</div>
+              <div class="option-desc">Drowning in busywork</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="time">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">2-4 hours</div>
+              <div class="option-desc">Significant but manageable</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="time">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">1-2 hours</div>
+              <div class="option-desc">Some routine tasks</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="time">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Less than 1 hour</div>
+              <div class="option-desc">Already optimized</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Q2 -->
+    <div class="question" data-q="2">
+      <div class="q-card">
+        <span class="q-num">2/8</span>
+        <div class="q-text">Do you have documented processes or SOPs?</div>
+        <div class="q-hint">AI needs clear instructions to automate effectively.</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="process">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Yes, detailed SOPs</div>
+              <div class="option-desc">Most processes documented</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="process">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Partial documentation</div>
+              <div class="option-desc">Some key processes written</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="process">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">It's all in my head</div>
+              <div class="option-desc">Know what to do, not written</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="process">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">What's an SOP?</div>
+              <div class="option-desc">No formal processes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Q3 -->
+    <div class="question" data-q="3">
+      <div class="q-card">
+        <span class="q-num">3/8</span>
+        <div class="q-text">What's your current tech stack?</div>
+        <div class="q-hint">More tools with APIs = more automation opportunities.</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="tech">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">10+ tools with APIs</div>
+              <div class="option-desc">CRM, email, calendar, analytics...</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="tech">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">5-10 tools</div>
+              <div class="option-desc">Core business tools</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="tech">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">2-5 tools</div>
+              <div class="option-desc">Basic setup</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="tech">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Spreadsheets + email</div>
+              <div class="option-desc">Keeping it simple</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Q4 -->
+    <div class="question" data-q="4">
+      <div class="q-card">
+        <span class="q-num">4/8</span>
+        <div class="q-text">How comfortable are you with AI tools?</div>
+        <div class="q-hint">ChatGPT, Claude, Copilot, automation platforms...</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="skill">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Power user</div>
+              <div class="option-desc">Daily AI use, prompt engineering</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="skill">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Regular user</div>
+              <div class="option-desc">Use ChatGPT/Claude for work</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="skill">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Experimenting</div>
+              <div class="option-desc">Tried it, not consistent</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="skill">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">AI-curious</div>
+              <div class="option-desc">Haven't really started</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Q5 -->
+    <div class="question" data-q="5">
+      <div class="q-card">
+        <span class="q-num">5/8</span>
+        <div class="q-text">What's your biggest bottleneck?</div>
+        <div class="q-hint">Where does work pile up?</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="bottleneck" data-type="sales">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Lead follow-up & sales</div>
+              <div class="option-desc">Leads go cold before response</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="bottleneck" data-type="content">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Content creation</div>
+              <div class="option-desc">Never enough time to publish</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="bottleneck" data-type="admin">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Admin & operations</div>
+              <div class="option-desc">Invoicing, scheduling, paperwork</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="bottleneck" data-type="none">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">No clear bottleneck</div>
+              <div class="option-desc">Things run smoothly</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Q6 -->
+    <div class="question" data-q="6">
+      <div class="q-card">
+        <span class="q-num">6/8</span>
+        <div class="q-text">Monthly automation budget?</div>
+        <div class="q-hint">Tools, APIs, and platforms have costs.</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="budget">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">$200+/month</div>
+              <div class="option-desc">Serious about scaling</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="budget">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">$50-200/month</div>
+              <div class="option-desc">Reasonable for ROI</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="budget">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">$20-50/month</div>
+              <div class="option-desc">Start small, prove value</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="budget">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Free tools only</div>
+              <div class="option-desc">Bootstrap mode</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Q7 -->
+    <div class="question" data-q="7">
+      <div class="q-card">
+        <span class="q-num">7/8</span>
+        <div class="q-text">Do you track your metrics?</div>
+        <div class="q-hint">AI thrives on data to optimize.</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="data">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Yes, everything tracked</div>
+              <div class="option-desc">Analytics, CRM, conversions</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="data">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Track the basics</div>
+              <div class="option-desc">Revenue, leads, main KPIs</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="data">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Gut feeling mostly</div>
+              <div class="option-desc">Know what works, not measured</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="data">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">No tracking</div>
+              <div class="option-desc">Flying blind</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Q8 -->
+    <div class="question" data-q="8">
+      <div class="q-card">
+        <span class="q-num">8/8</span>
+        <div class="q-text">Primary goal with AI automation?</div>
+        <div class="q-hint">This shapes your strategy.</div>
+        <div class="options">
+          <div class="option" data-v="3" data-cat="goal" data-type="scale">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Scale without hiring</div>
+              <div class="option-desc">10x output, same team</div>
+            </div>
+          </div>
+          <div class="option" data-v="2" data-cat="goal" data-type="time">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Free up my time</div>
+              <div class="option-desc">Focus on high-value work</div>
+            </div>
+          </div>
+          <div class="option" data-v="1" data-cat="goal" data-type="quality">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Reduce errors</div>
+              <div class="option-desc">Consistency and reliability</div>
+            </div>
+          </div>
+          <div class="option" data-v="0" data-cat="goal" data-type="explore">
+            <div class="option-dot"></div>
+            <div class="option-content">
+              <div class="option-label">Just curious</div>
+              <div class="option-desc">Exploring options</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="results" id="results"></div>
+    
+    <footer class="footer">
+      <div class="footer-brand">Luca Vizzielli</div>
+      <div class="footer-tagline">AI + GTM insights</div>
+    </footer>
+  </div>
+  
+  <script>
+    const questions = document.querySelectorAll('.question');
+    const resultsDiv = document.getElementById('results');
+    const progress = document.getElementById('progress');
+    const progressText = document.getElementById('progress-text');
+    const progressPct = document.getElementById('progress-pct');
+    
+    let current = 0;
+    let score = 0;
+    let answers = {};
+    
+    // Toolkit data by tier
+    const toolkits = {
+      expert: {
+        tier: '🚀 Ready to Launch',
+        tierColor: '#22c55e',
+        tierBg: 'rgba(34, 197, 94, 0.15)',
+        desc: "You're primed for advanced AI automation. Time to build your AI workforce.",
+        tools: [
+          { icon: '🤖', name: 'OpenClaw', type: 'AI Agent Framework', tag: 'free', tagClass: '', desc: 'Run AI agents 24/7. Handles email, scheduling, research autonomously. Self-hosted, no monthly fees.', link: 'https://openclaw.ai' },
+          { icon: '⚡', name: 'n8n', type: 'Workflow Automation', tag: 'free tier', tagClass: '', desc: 'Connect 400+ apps. Build complex automations visually. Self-host or cloud.', link: 'https://n8n.io' },
+          { icon: '🧠', name: 'Claude API', type: 'AI Model', tag: '$5/mo avg', tagClass: 'paid', desc: 'Best reasoning model. Use for complex tasks, analysis, writing.', link: 'https://anthropic.com' }
+        ],
+        prompts: [
+          {
+            title: '📧 Email Triage Agent',
+            prompt: `You are my email assistant. For each email I forward:
+
+1. Categorize: [Urgent/Important/FYI/Spam]
+2. Summarize in 1 sentence
+3. Draft reply if needed (match my tone: professional but warm)
+4. Flag if it needs my personal attention
+
+My priorities: client work > partnerships > everything else.
+Never auto-send. Always show me the draft first.`
+          },
+          {
+            title: '📊 Weekly Report Generator',
+            prompt: `Analyze my week and generate a report:
+
+DATA SOURCES:
+- Calendar: [paste events]
+- Tasks completed: [paste list]
+- Revenue: [number]
+
+OUTPUT:
+1. Time allocation breakdown (%)
+2. Top 3 wins
+3. Biggest time wasters
+4. Next week focus areas
+5. One automation opportunity I missed
+
+Be brutally honest. I want insights, not compliments.`
+          }
+        ],
+        steps: [
+          { title: 'Set up n8n (30 min)', desc: 'Deploy on Railway or self-host. Connect your email and calendar.' },
+          { title: 'Build your first workflow (1 hour)', desc: 'Start with: New email → AI categorization → Slack notification.' },
+          { title: 'Add Claude for smart processing (30 min)', desc: 'Connect Claude API. Use it to draft responses and summarize.' },
+          { title: 'Scale to 3 workflows this week', desc: 'Add: Lead capture, content repurposing, meeting prep automation.' }
+        ]
+      },
+      intermediate: {
+        tier: '⚡ Almost There',
+        tierColor: '#eab308',
+        tierBg: 'rgba(234, 179, 8, 0.15)',
+        desc: "Good foundation! Close a few gaps and you're ready for serious automation.",
+        tools: [
+          { icon: '🔗', name: 'Make (Integromat)', type: 'No-Code Automation', tag: 'free tier', tagClass: '', desc: 'Visual automation builder. Easier than n8n, great for starting. 1000 ops/month free.', link: 'https://make.com' },
+          { icon: '💬', name: 'Claude Pro', type: 'AI Assistant', tag: '$20/mo', tagClass: 'paid', desc: 'Unlimited Claude access. Use daily for writing, analysis, coding help.', link: 'https://claude.ai' },
+          { icon: '📝', name: 'Notion', type: 'Documentation', tag: 'free', tagClass: '', desc: 'Document your SOPs here. AI can read and follow Notion docs.', link: 'https://notion.so' }
+        ],
+        prompts: [
+          {
+            title: '📋 SOP Generator',
+            prompt: `Help me document this process as an SOP:
+
+PROCESS NAME: [e.g., "Client Onboarding"]
+
+I'll describe what I do step by step. For each step:
+1. Write clear instructions anyone could follow
+2. Note which tools I use
+3. Flag what could be automated
+4. Estimate time per step
+
+Ask me clarifying questions if my description is vague.
+Output as a numbered checklist in Notion format.`
+          },
+          {
+            title: '🎯 Daily Task Prioritizer',
+            prompt: `Here's my task list for today:
+[paste tasks]
+
+My current priorities:
+1. Revenue-generating work
+2. Client deliverables
+3. Content creation
+4. Admin
+
+Reorder my list by:
+- Impact (high/med/low)
+- Urgency (today/this week/someday)
+- Energy required (deep work/shallow)
+
+Tell me the ONE task to start with and why.
+Flag anything I should delegate or automate.`
+          }
+        ],
+        steps: [
+          { title: 'Document your top 5 processes (2 hours)', desc: 'Use the SOP Generator prompt. Focus on repetitive tasks.' },
+          { title: 'Sign up for Make.com (15 min)', desc: 'Start free. Connect email + Google Sheets + Slack.' },
+          { title: 'Build: Email → Spreadsheet logger (30 min)', desc: 'Log all inbound emails to a sheet automatically.' },
+          { title: 'Use Claude daily for 2 weeks', desc: 'Build the habit. Use it for emails, planning, research.' }
+        ]
+      },
+      beginner: {
+        tier: '🌱 Building Foundations',
+        tierColor: '#3b82f6',
+        tierBg: 'rgba(59, 130, 246, 0.15)',
+        desc: "You have potential but need some groundwork. Focus on basics before automation.",
+        tools: [
+          { icon: '💬', name: 'ChatGPT', type: 'AI Assistant', tag: 'free', tagClass: '', desc: 'Start here. Use daily for writing, brainstorming, research. Build AI habits.', link: 'https://chat.openai.com' },
+          { icon: '📊', name: 'Google Sheets', type: 'Data Organization', tag: 'free', tagClass: '', desc: "You probably have it. Start tracking metrics here. It's automation-ready.", link: 'https://sheets.google.com' },
+          { icon: '⏰', name: 'Toggl Track', type: 'Time Tracking', tag: 'free', tagClass: '', desc: "Track where your time goes for 1 week. You can't automate what you don't measure.", link: 'https://toggl.com/track' }
+        ],
+        prompts: [
+          {
+            title: '🧠 AI Basics Practice',
+            prompt: `I'm learning to use AI effectively. Let's practice.
+
+Give me 3 tasks I might do today at work that you could help with.
+For each one:
+1. Show me how to ask you for help
+2. Give an example of good vs bad prompts
+3. Show me what output to expect
+
+Start simple. I want to build confidence.`
+          },
+          {
+            title: '📝 Process Discovery',
+            prompt: `I want to identify what I should automate.
+
+Ask me about my typical workday:
+- What do I do first thing?
+- What tasks repeat daily/weekly?
+- What do I hate doing?
+- Where do I lose time?
+
+Then tell me:
+1. My top 3 automation candidates
+2. What I should document first
+3. One quick win I could do this week`
+          }
+        ],
+        steps: [
+          { title: 'Use ChatGPT for 1 task today', desc: 'Email drafting, meeting prep, or research. Just start.' },
+          { title: 'Track your time for 5 days', desc: 'Use Toggl. Be honest. Find out where time actually goes.' },
+          { title: 'Write down ONE process', desc: 'Pick your most repeated task. Document each step.' },
+          { title: 'Set a goal: 30 min AI use daily', desc: 'Consistency beats intensity. Build the habit.' }
+        ]
+      },
+      starter: {
+        tier: '🎯 Start Here',
+        tierColor: '#a855f7',
+        tierBg: 'rgba(168, 85, 247, 0.15)',
+        desc: "You're early in the journey. That's okay — everyone starts somewhere.",
+        tools: [
+          { icon: '📺', name: 'YouTube', type: 'Learning', tag: 'free', tagClass: '', desc: 'Search "AI for beginners 2024". Watch 3 videos this week. Learn what\'s possible.', link: 'https://youtube.com' },
+          { icon: '💬', name: 'ChatGPT', type: 'Your First AI', tag: 'free', tagClass: '', desc: 'Just start using it. Ask it anything. Make mistakes. Learn.', link: 'https://chat.openai.com' },
+          { icon: '📓', name: 'Apple Notes / Google Keep', type: 'Capture', tag: 'free', tagClass: '', desc: 'Start writing down your processes. Just notes. No system needed yet.', link: '#' }
+        ],
+        prompts: [
+          {
+            title: '👋 Your First AI Conversation',
+            prompt: `Hi! I'm completely new to AI. 
+
+Can you explain what you can help me with in simple terms?
+
+I run a [type of business/work].
+My biggest challenge is [main problem].
+
+What are 3 simple things you could help me with today?
+No jargon. Explain like I'm 10.`
+          },
+          {
+            title: '🤔 Understanding AI',
+            prompt: `I keep hearing about AI automation but I don't really get it.
+
+Explain to me:
+1. What can AI actually do for a small business?
+2. What CAN'T it do (be honest)?
+3. Is it complicated to set up?
+4. How much does it cost?
+
+Use examples from real businesses like mine.
+Be honest about the learning curve.`
+          }
+        ],
+        steps: [
+          { title: 'Watch 1 AI tutorial today (15 min)', desc: 'Search "ChatGPT for beginners". Just watch and learn.' },
+          { title: 'Have your first AI conversation', desc: 'Use the prompt above. Ask follow-up questions. Explore.' },
+          { title: 'Write down 3 things you hate doing', desc: 'These are your future automation targets.' },
+          { title: 'Use AI once per day this week', desc: 'Anything. Email help, questions, ideas. Build familiarity.' }
+        ]
+      }
+    };
+    
+    document.querySelectorAll('.option').forEach(opt => {
+      opt.addEventListener('click', function() {
+        const q = this.closest('.question');
+        q.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        this.classList.add('selected');
+        
+        score += parseInt(this.dataset.v);
+        if (this.dataset.type) {
+          answers[this.dataset.cat] = this.dataset.type;
+        }
+        
+        setTimeout(() => {
+          if (current < questions.length - 1) {
+            questions[current].classList.remove('active');
+            current++;
+            questions[current].classList.add('active');
+            updateProgress();
+          } else {
+            showResults();
+          }
+        }, 300);
+      });
+    });
+    
+    function updateProgress() {
+      const pct = Math.round(((current + 1) / questions.length) * 100);
+      progress.style.width = pct + '%';
+      progressText.textContent = `Question ${current + 1} of ${questions.length}`;
+      progressPct.textContent = pct + '%';
+    }
+    
+    function showResults() {
+      questions[current].classList.remove('active');
+      document.getElementById('header').style.display = 'none';
+      document.getElementById('progress-wrap').style.display = 'none';
+      
+      let tier;
+      if (score >= 20) tier = 'expert';
+      else if (score >= 14) tier = 'intermediate';
+      else if (score >= 8) tier = 'beginner';
+      else tier = 'starter';
+      
+      const data = toolkits[tier];
+      const pct = Math.round((score / 24) * 100);
+      const dashOffset = 377 - (377 * pct / 100);
+      
+      resultsDiv.innerHTML = `
+        <div class="result-card">
+          <div class="result-hero">
+            <div class="score-ring">
+              <svg width="140" height="140" viewBox="0 0 140 140">
+                <circle class="score-ring-bg" cx="70" cy="70" r="60"/>
+                <circle class="score-ring-fill" cx="70" cy="70" r="60" style="stroke-dashoffset: ${dashOffset}"/>
+              </svg>
+              <div class="score-value">${score}</div>
+            </div>
+            <div class="score-label">out of 24 points</div>
+            <div class="tier-badge" style="background: ${data.tierBg}; color: ${data.tierColor}">${data.tier}</div>
+            <p class="tier-desc">${data.desc}</p>
+          </div>
+          
+          <div class="toolkit">
+            <div class="section-title">🛠️ Your Toolkit</div>
+            <div class="tool-cards">
+              ${data.tools.map(t => `
+                <div class="tool-card">
+                  <div class="tool-header">
+                    <div class="tool-icon">${t.icon}</div>
+                    <div class="tool-info">
+                      <h4>${t.name}</h4>
+                      <span>${t.type}</span>
+                    </div>
+                    <div class="tool-tag ${t.tagClass}">${t.tag}</div>
+                  </div>
+                  <p class="tool-desc">${t.desc}</p>
+                  ${t.link !== '#' ? `<a href="${t.link}" target="_blank" class="tool-link">Get started →</a>` : ''}
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          
+          <div class="prompts-section">
+            <div class="section-title">📝 Copy-Paste Prompts</div>
+            ${data.prompts.map((p, i) => `
+              <div class="prompt-card">
+                <div class="prompt-header">
+                  <span class="prompt-title">${p.title}</span>
+                  <button class="copy-btn" onclick="copyPrompt(${i})">Copy</button>
+                </div>
+                <div class="prompt-body" id="prompt-${i}">${p.prompt}</div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="steps-section">
+            <div class="section-title">📋 This Week's Implementation</div>
+            ${data.steps.map((s, i) => `
+              <div class="step-item">
+                <div class="step-num">${i + 1}</div>
+                <div class="step-content">
+                  <h4>${s.title}</h4>
+                  <p>${s.desc}</p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="cta-section">
+            <p class="cta-text">Want help implementing this?</p>
+            <a href="https://www.linkedin.com/in/luca-vizzielli/" target="_blank" class="cta-button">
+              Stay updated on AI & Automation →
+            </a>
+          </div>
+        </div>
+      `;
+      
+      resultsDiv.classList.add('active');
+    }
+    
+    function copyPrompt(idx) {
+      const text = document.getElementById(`prompt-${idx}`).innerText;
+      navigator.clipboard.writeText(text);
+      const btn = event.target;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+    
+    updateProgress();
+  </script>
+</body>
+</html>
