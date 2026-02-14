@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How I Automate 25 Daily Engagement Comments Across 3 Platforms</title>
+    <meta name="description" content="The exact process I use to automate 25 engagement comments daily across LinkedIn, X, and Reddit. Step-by-step breakdown with configs.">
+    <meta property="og:title" content="How I Automate 25 Daily Engagement Comments Across 3 Platforms">
+    <meta property="og:description" content="The exact process to automate 25 engagement comments daily across LinkedIn, X, and Reddit for ~$2/day.">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦞</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --green: #5dba3b;
+            --neon: #00ff00;
+            --cyan: #4aedd9;
+            --red: #ff4d4d;
+            --yellow: #fcdb05;
+            --panel-border: 3px solid #000;
+            --bevel: inset 3px 3px rgba(255,255,255,0.15), inset -3px -3px rgba(0,0,0,0.4);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: #e0e0e0;
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+        /* Crosshatch background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(45deg, rgba(255,255,255,0.02) 25%, transparent 25%),
+                linear-gradient(-45deg, rgba(255,255,255,0.02) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.02) 75%),
+                linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.02) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        /* CRT overlay */
+        .crt-overlay {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.06) 0px,
+                rgba(0,0,0,0.06) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+        }
+        /* Marquee */
+        .marquee-banner {
+            background: var(--yellow);
+            color: #000;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 8px 0;
+            overflow: hidden;
+            white-space: nowrap;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10000;
+        }
+        .marquee-track {
+            display: inline-block;
+            animation: marquee 30s linear infinite;
+        }
+        .marquee-track span { padding-right: 60px; }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        /* Layout */
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            margin-top: 36px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        /* Progress tracker */
+        .progress-tracker {
+            position: fixed;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border: 2px solid #333;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .progress-dot.active {
+            border-color: var(--green);
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green);
+        }
+        .progress-dot .tooltip {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1a1a1a;
+            border: 1px solid #333;
+            padding: 4px 8px;
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--cyan);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .progress-dot:hover .tooltip { opacity: 1; }
+        /* Panels */
+        .panel {
+            background: #111;
+            border: var(--panel-border);
+            box-shadow: var(--bevel);
+            border-radius: 0;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        .panel-title {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 14px;
+            color: var(--green);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            line-height: 1.8;
+        }
+        .step-number {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: var(--yellow);
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        h1 {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 20px;
+            color: var(--green);
+            line-height: 2;
+            margin-bottom: 16px;
+        }
+        h2 {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 13px;
+            color: var(--cyan);
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+        p { margin-bottom: 16px; font-size: 15px; }
+        a { color: var(--cyan); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        /* Code blocks - collapsible */
+        .code-toggle {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            box-shadow: var(--bevel);
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .code-toggle-header {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--cyan);
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .code-toggle-header:hover { background: #222; }
+        .code-toggle-header::after {
+            content: '+ EXPAND';
+            font-size: 10px;
+            color: #666;
+            font-family: 'Press Start 2P', monospace;
+        }
+        .code-toggle.open .code-toggle-header::after { content: '- COLLAPSE'; }
+        .code-toggle-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .code-toggle.open .code-toggle-body { max-height: 800px; }
+        .code-toggle pre {
+            padding: 16px;
+            margin: 0;
+            background: #0d0d0d;
+            border-top: 1px solid #222;
+            overflow-x: auto;
+        }
+        .code-toggle code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--neon);
+            line-height: 1.6;
+        }
+        /* Terminal animation */
+        .terminal {
+            background: #0d0d0d;
+            border: 2px solid #333;
+            box-shadow: var(--bevel);
+            padding: 0;
+            margin: 24px 0;
+            overflow: hidden;
+        }
+        .terminal-bar {
+            background: #1a1a1a;
+            padding: 8px 12px;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .terminal-dot:nth-child(1) { background: var(--red); }
+        .terminal-dot:nth-child(2) { background: var(--yellow); }
+        .terminal-dot:nth-child(3) { background: var(--green); }
+        .terminal-label {
+            margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: #666;
+        }
+        .terminal-body {
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--neon);
+            min-height: 120px;
+        }
+        .terminal-line {
+            opacity: 0;
+            animation: fadeInLine 0.5s forwards;
+            margin-bottom: 4px;
+        }
+        .terminal-line .time { color: var(--cyan); }
+        .terminal-line .status { color: var(--green); }
+        .terminal-line .warn { color: var(--yellow); }
+        @keyframes fadeInLine {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Hero */
+        .hero-section {
+            padding: 80px 0 40px;
+            text-align: center;
+        }
+        .hero-mascot { margin-bottom: 24px; }
+        .hero-mascot svg { width: 100px; height: 100px; }
+        .hero-subtitle {
+            font-size: 16px;
+            color: #999;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 24px;
+            color: var(--green);
+            display: block;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        /* Step sections */
+        .step-section {
+            padding: 48px 0;
+            border-top: 1px solid #1a1a1a;
+        }
+        /* Good vs bad */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0;
+        }
+        .comparison-bad, .comparison-good {
+            padding: 16px;
+            border: 2px solid;
+            font-size: 13px;
+        }
+        .comparison-bad {
+            border-color: var(--red);
+            background: rgba(255,77,77,0.05);
+        }
+        .comparison-good {
+            border-color: var(--green);
+            background: rgba(93,186,59,0.05);
+        }
+        .comparison-label {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 9px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .comparison-bad .comparison-label { color: var(--red); }
+        .comparison-good .comparison-label { color: var(--green); }
+        /* Try it section */
+        .try-it {
+            background: #0d0d0d;
+            border: 2px solid var(--cyan);
+            box-shadow: 0 0 20px rgba(74,237,217,0.1);
+            padding: 32px;
+            margin: 24px 0;
+        }
+        .try-it input {
+            width: 100%;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            color: #fff;
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            margin: 12px 0;
+            outline: none;
+        }
+        .try-it input:focus { border-color: var(--cyan); }
+        .try-it-btn {
+            background: var(--green);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .try-it-btn:hover { background: var(--neon); }
+        .try-it-result {
+            margin-top: 16px;
+            padding: 16px;
+            background: #111;
+            border: 1px solid #333;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--neon);
+            display: none;
+            line-height: 1.8;
+        }
+        .try-it-result.visible { display: block; }
+        /* Sheet mockup */
+        .sheet-mock {
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        .sheet-mock table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+        .sheet-mock th {
+            padding: 8px 12px;
+            text-align: left;
+            border: 1px solid #333;
+            font-weight: 500;
+        }
+        .sheet-mock td {
+            padding: 8px 12px;
+            border: 1px solid #222;
+            color: #aaa;
+        }
+        .sh-date { background: #1a3a1a; color: var(--green); }
+        .sh-priority { background: #3a1a1a; color: var(--red); }
+        .sh-author { background: #1a1a3a; color: var(--cyan); }
+        .sh-post { background: #1a1a1a; color: #ccc; }
+        .sh-link { background: #1a1a1a; color: var(--cyan); }
+        .sh-draft { background: #2a2a1a; color: var(--yellow); }
+        .sh-done { background: #1a3a1a; color: var(--green); }
+        .sh-notes { background: #1a1a1a; color: #888; }
+        /* Blacklist */
+        .blacklist {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .blacklist-word {
+            background: rgba(255,77,77,0.15);
+            border: 1px solid var(--red);
+            padding: 4px 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--red);
+            text-decoration: line-through;
+        }
+        /* CTA */
+        .cta-section {
+            text-align: center;
+            padding: 64px 0;
+        }
+        .cta-btn {
+            display: inline-block;
+            background: var(--green);
+            color: #000;
+            padding: 16px 32px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 3px solid #000;
+            box-shadow: var(--bevel), 0 0 30px rgba(93,186,59,0.3);
+        }
+        .cta-btn:hover {
+            background: var(--neon);
+            box-shadow: var(--bevel), 0 0 50px rgba(0,255,0,0.4);
+            text-decoration: none;
+        }
+        .spots-left {
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            color: var(--red);
+            margin-top: 16px;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 32px 0;
+            color: #444;
+            font-size: 13px;
+            border-top: 1px solid #1a1a1a;
+        }
+        .footer a { color: var(--cyan); }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .progress-tracker { display: none; }
+            h1 { font-size: 14px; }
+            .panel { padding: 20px; }
+            .comparison { grid-template-columns: 1fr; }
+            .hero-stats { gap: 16px; }
+            .stat-value { font-size: 18px; }
+            .container { padding: 0 16px; }
+        }
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            margin: 12px 0;
+        }
+        .checklist li {
+            padding: 6px 0 6px 28px;
+            position: relative;
+            font-size: 14px;
+        }
+        .checklist li::before {
+            content: '>';
+            position: absolute;
+            left: 8px;
+            color: var(--green);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .highlight { color: var(--cyan); font-weight: 600; }
+        .green { color: var(--green); }
+        .red { color: var(--red); }
+        .yellow { color: var(--yellow); }
+        /* Mascot animations */
+        .hero-mascot .claw-left { animation: claw-snap-left 3s ease-in-out infinite; transform-origin: 28px 54px; }
+        .hero-mascot .claw-right { animation: claw-snap-right 3s ease-in-out infinite; transform-origin: 92px 54px; }
+        .hero-mascot .eye-glow { animation: eye-pulse 2s ease-in-out infinite; }
+        @keyframes claw-snap-left { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+        @keyframes claw-snap-right { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }
+        @keyframes eye-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+<div class="crt-overlay"></div>
+
+<!-- MARQUEE -->
+<div class="marquee-banner">
+    <div class="marquee-track">
+        <span>🦞 25 COMMENTS/DAY x 3 PLATFORMS x $2/DAY = WARM LEAD MACHINE -- FREE STEP-BY-STEP BREAKDOWN -- CLAW4GROWTH.COM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>🦞 25 COMMENTS/DAY x 3 PLATFORMS x $2/DAY = WARM LEAD MACHINE -- FREE STEP-BY-STEP BREAKDOWN -- CLAW4GROWTH.COM&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+</div>
+
+<!-- PROGRESS TRACKER -->
+<nav class="progress-tracker" id="progressTracker">
+    <div class="progress-dot" data-target="intro"><span class="tooltip">Intro</span></div>
+    <div class="progress-dot" data-target="step1"><span class="tooltip">Finding Posts</span></div>
+    <div class="progress-dot" data-target="step2"><span class="tooltip">Voice Profile</span></div>
+    <div class="progress-dot" data-target="step3"><span class="tooltip">Comment Gen</span></div>
+    <div class="progress-dot" data-target="step4"><span class="tooltip">AI Detection</span></div>
+    <div class="progress-dot" data-target="step5"><span class="tooltip">Sheet Pipeline</span></div>
+    <div class="progress-dot" data-target="step6"><span class="tooltip">Daily Review</span></div>
+    <div class="progress-dot" data-target="results"><span class="tooltip">Results</span></div>
+    <div class="progress-dot" data-target="cta"><span class="tooltip">Get It</span></div>
+</nav>
+
+<div class="page-wrapper">
+    <!-- HERO -->
+    <section class="hero-section" id="intro">
+        <div class="container">
+            <div class="hero-mascot">
+                <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#ff4d4d"/><stop offset="100%" stop-color="#991b1b"/>
+                        </linearGradient>
+                        <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#00e5cc" stop-opacity="0.3"/><stop offset="100%" stop-color="#00e5cc" stop-opacity="0.1"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M60 15 C35 15 20 37 20 55 C20 73 33 92 47 97 L47 107 L53 107 L53 97 C53 97 58 99 63 97 L63 107 L69 107 L69 97 C83 92 96 73 96 55 C96 37 85 15 60 15Z" fill="url(#lg)"/>
+                    <path class="claw-left" d="M24 48 C12 44 7 52 11 60 C15 68 24 63 28 54 C30 49 28 47 24 48Z" fill="url(#lg)"/>
+                    <path class="claw-right" d="M96 48 C108 44 113 52 109 60 C105 68 96 63 92 54 C90 49 92 47 96 48Z" fill="url(#lg)"/>
+                    <rect x="28" y="58" width="64" height="6" rx="1" fill="#1a1a2e" stroke="#333" stroke-width="0.5"/>
+                    <rect x="32" y="38" width="56" height="20" rx="2" fill="#0a0f1a" stroke="#333" stroke-width="0.5"/>
+                    <rect x="38" y="50" width="4" height="6" rx="0.5" fill="#00e5cc" opacity="0.8"/>
+                    <rect x="44" y="47" width="4" height="9" rx="0.5" fill="#00e5cc" opacity="0.9"/>
+                    <rect x="50" y="44" width="4" height="12" rx="0.5" fill="#ff4d4d" opacity="0.9"/>
+                    <rect x="56" y="46" width="4" height="10" rx="0.5" fill="#00e5cc" opacity="0.8"/>
+                    <rect x="62" y="42" width="4" height="14" rx="0.5" fill="#00e5cc"/>
+                    <rect x="68" y="48" width="4" height="8" rx="0.5" fill="#00e5cc" opacity="0.7"/>
+                    <rect x="74" y="40" width="4" height="16" rx="0.5" fill="#ff4d4d"/>
+                    <rect x="80" y="43" width="4" height="13" rx="0.5" fill="#00e5cc" opacity="0.9"/>
+                    <rect x="32" y="38" width="56" height="20" rx="2" fill="url(#sg)"/>
+                    <path d="M47 18 Q38 8 33 11" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M73 18 Q82 8 87 11" stroke="#ff4d4d" stroke-width="2" stroke-linecap="round"/>
+                    <rect x="37" y="26" width="16" height="11" rx="3" fill="none" stroke="#e0e0e0" stroke-width="1.8"/>
+                    <rect x="67" y="26" width="16" height="11" rx="3" fill="none" stroke="#e0e0e0" stroke-width="1.8"/>
+                    <path d="M53 31 L67 31" stroke="#e0e0e0" stroke-width="1.5"/>
+                    <circle cx="45" cy="31" r="4" fill="#0a0f1a"/>
+                    <circle cx="75" cy="31" r="4" fill="#0a0f1a"/>
+                    <circle class="eye-glow" cx="46" cy="30" r="1.5" fill="#00e5cc"/>
+                    <circle class="eye-glow" cx="76" cy="30" r="1.5" fill="#00e5cc"/>
+                    <path d="M30 24 Q30 12 60 10 Q90 12 90 24" stroke="#555" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    <rect x="26" y="22" width="7" height="10" rx="3" fill="#333" stroke="#555" stroke-width="0.5"/>
+                    <rect x="87" y="22" width="7" height="10" rx="3" fill="#333" stroke="#555" stroke-width="0.5"/>
+                    <path d="M27 30 Q20 35 22 40" stroke="#555" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    <circle cx="22" cy="41" r="2.5" fill="#333" stroke="#00e5cc" stroke-width="0.5"/>
+                </svg>
+            </div>
+            <h1>How I Automate 25 Daily<br>Engagement Comments<br>Across 3 Platforms</h1>
+            <p class="hero-subtitle">I automate 25 engagement comments daily across LinkedIn, X, and Reddit. Here's the exact process, the configs, and the full pipeline. Copy it.</p>
+            <div class="hero-stats">
+                <div class="stat"><span class="stat-value">25</span><span class="stat-label">comments/day</span></div>
+                <div class="stat"><span class="stat-value">3</span><span class="stat-label">platforms</span></div>
+                <div class="stat"><span class="stat-value">$2</span><span class="stat-label">daily cost</span></div>
+                <div class="stat"><span class="stat-value">5m</span><span class="stat-label">review time</span></div>
+            </div>
+
+            <!-- Terminal animation -->
+            <div class="terminal" style="margin-top: 40px; text-align: left;">
+                <div class="terminal-bar">
+                    <div class="terminal-dot"></div>
+                    <div class="terminal-dot"></div>
+                    <div class="terminal-dot"></div>
+                    <span class="terminal-label">cron-engagement.sh</span>
+                </div>
+                <div class="terminal-body" id="terminalBody"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 1: Finding Posts -->
+    <section class="step-section" id="step1">
+        <div class="container">
+            <div class="panel">
+                <span class="step-number">// STEP 01</span>
+                <div class="panel-title">Finding the Right Posts</div>
+                <p>Every morning at 05:30 UTC, a cron job fires up. It hits three platforms with niche-specific queries and pulls back fresh posts from the past week.</p>
+                <p>The key is <span class="highlight">specificity</span>. I don't search for "marketing." I search for "AI agents for lead gen" or "solopreneur automation stack." Narrow beats broad every time.</p>
+                <p>Here's how each platform works:</p>
+                <ul class="checklist">
+                    <li><span class="green">LinkedIn:</span> MCP batch search. Queries like "AI agents" + "marketing automation" + "solopreneur." Filter by past week, sort by engagement.</li>
+                    <li><span class="green">X (Twitter):</span> Cached reader with keyword monitoring. Same niche queries, freshness filter baked in.</li>
+                    <li><span class="green">Reddit:</span> Web search with <code>site:reddit.com</code> prefix. Targets subreddits like r/Entrepreneur, r/SaaS, r/artificial. Past week filter.</li>
+                </ul>
+
+                <div class="code-toggle" onclick="this.classList.toggle('open')">
+                    <div class="code-toggle-header">example-queries.json</div>
+                    <div class="code-toggle-body">
+<pre><code>{
+  "niches": [
+    "AI agents for marketing",
+    "marketing automation solopreneur",
+    "AI cold outreach",
+    "solopreneur productivity stack",
+    "vibecoding tools",
+    "GTM engineering"
+  ],
+  "platforms": {
+    "linkedin": {
+      "method": "mcp_batch_search",
+      "freshness": "past_week",
+      "max_results": 15
+    },
+    "x": {
+      "method": "cached_reader",
+      "freshness": "past_week",
+      "max_results": 10
+    },
+    "reddit": {
+      "method": "web_search",
+      "prefix": "site:reddit.com",
+      "subreddits": [
+        "r/Entrepreneur",
+        "r/SaaS",
+        "r/artificial",
+        "r/smallbusiness"
+      ],
+      "freshness": "past_week",
+      "max_results": 10
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="code-toggle" onclick="this.classList.toggle('open')">
+                    <div class="code-toggle-header">crontab entry</div>
+                    <div class="code-toggle-body">
+<pre><code># Engagement comment pipeline - runs daily at 05:30 UTC
+30 5 * * * /home/luca/scripts/engagement-scan.sh >> /var/log/engagement.log 2>&1
+
+# The script does:
+# 1. Query all 3 platforms
+# 2. Deduplicate results
+# 3. Score by relevance (niche match + engagement count)
+# 4. Pass top 30 to comment generation</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 2: Voice Profile -->
+    <section class="step-section" id="step2">
+        <div class="container">
+            <div class="panel">
+                <span class="step-number">// STEP 02</span>
+                <div class="panel-title">The Voice Profile</div>
+                <p>This is the part most people skip. And it's the reason their automated comments read like a bot wrote them (because one did, with zero personality).</p>
+                <p>I built a voice profile document. It has 6 traits that define how I write online:</p>
+                <ul class="checklist">
+                    <li><span class="highlight">Direct.</span> No fluff, no throat-clearing. Get to the point in the first sentence.</li>
+                    <li><span class="highlight">Technical but accessible.</span> I can talk about cron jobs and also explain them to a non-dev.</li>
+                    <li><span class="highlight">Opinionated.</span> I take a stance. "This is wrong because..." not "Some might argue..."</li>
+                    <li><span class="highlight">Conversational.</span> Like texting a smart friend. Short sentences. Sometimes fragments.</li>
+                    <li><span class="highlight">First-person stories.</span> "I built this" beats "One could build this" every time.</li>
+                    <li><span class="highlight">Dry humor.</span> Occasional. Never forced. If it's not funny, cut it.</li>
+                </ul>
+
+                <p>Before every comment gets generated, it runs through this checklist:</p>
+                <ul class="checklist">
+                    <li>Does it add something the original post didn't say?</li>
+                    <li>Would I actually say this out loud?</li>
+                    <li>Is it under 3 sentences? (LinkedIn can go to 4)</li>
+                    <li>Does it avoid generic agreement? ("Great post!" = instant delete)</li>
+                    <li>Zero AI vocabulary? (check the blacklist)</li>
+                </ul>
+
+                <p>Speaking of which, here's the <span class="red">AI vocabulary blacklist</span>:</p>
+                <div class="blacklist">
+                    <span class="blacklist-word">pivotal</span>
+                    <span class="blacklist-word">crucial</span>
+                    <span class="blacklist-word">delve</span>
+                    <span class="blacklist-word">showcase</span>
+                    <span class="blacklist-word">foster</span>
+                    <span class="blacklist-word">leverage</span>
+                    <span class="blacklist-word">streamline</span>
+                    <span class="blacklist-word">landscape</span>
+                    <span class="blacklist-word">paradigm</span>
+                    <span class="blacklist-word">synergy</span>
+                    <span class="blacklist-word">holistic</span>
+                    <span class="blacklist-word">game-changer</span>
+                    <span class="blacklist-word">empower</span>
+                    <span class="blacklist-word">navigate</span>
+                    <span class="blacklist-word">robust</span>
+                </div>
+
+                <div class="comparison">
+                    <div class="comparison-bad">
+                        <span class="comparison-label">BAD COMMENT</span>
+                        "This is a pivotal insight! AI agents are truly a game-changer for streamlining marketing workflows. Thanks for sharing this robust framework!"
+                    </div>
+                    <div class="comparison-good">
+                        <span class="comparison-label">GOOD COMMENT</span>
+                        "I run a similar setup. The part most people miss is the voice profile - without it, your AI comments read like every other bot on LinkedIn. I spent 2 hours on mine and it changed everything."
+                    </div>
+                </div>
+
+                <div class="code-toggle" onclick="this.classList.toggle('open')">
+                    <div class="code-toggle-header">voice-profile.md (snippet)</div>
+                    <div class="code-toggle-body">
+<pre><code># Voice Profile - Luca
+
+## Core Traits
+- Direct, no fluff
+- Technical but accessible  
+- Opinionated with receipts
+- Conversational (short sentences, fragments ok)
+- First-person stories over abstract advice
+- Dry humor, never forced
+
+## Comment Rules
+- Max 3 sentences (4 for LinkedIn if adding value)
+- Must add new info/perspective
+- Never generic agreement
+- Always a personal angle or experience
+- Question at the end only if genuine
+
+## Blacklist (auto-reject if detected)
+pivotal, crucial, delve, showcase, foster,
+leverage, streamline, landscape, paradigm,
+synergy, holistic, game-changer, empower,
+navigate, robust, harness, spearhead,
+cutting-edge, best-in-class, thought leader</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 3: Comment Generation -->
+    <section class="step-section" id="step3">
+        <div class="container">
+            <div class="panel">
+                <span class="step-number">// STEP 03</span>
+                <div class="panel-title">Comment Generation</div>
+                <p>For each post, the LLM gets three things: the post content, my voice profile, and the instruction to generate 3 comment variants.</p>
+                <p>Why 3? Because the first draft is usually too safe. The second is usually better. The third sometimes surprises you. The system auto-picks the best one based on a scoring function (uniqueness, voice match, length).</p>
+                <p>After picking, it runs a humanization pass:</p>
+                <ul class="checklist">
+                    <li>Remove all em dashes. Replace with periods or commas.</li>
+                    <li>Kill arrow symbols (->). Use "so" or "which means" instead.</li>
+                    <li>Strip any remaining AI patterns (excessive hedging, "It's worth noting that...")</li>
+                    <li>Add typo variation (occasionally leave a minor imperfection)</li>
+                    <li>Vary sentence length. Mix short punchy with one longer one.</li>
+                </ul>
+
+                <div class="code-toggle" onclick="this.classList.toggle('open')">
+                    <div class="code-toggle-header">generate-comments.py (core logic)</div>
+                    <div class="code-toggle-body">
+<pre><code>def generate_comments(post, voice_profile):
+    variants = []
+    for i in range(3):
+        prompt = f"""
+        Post: {post['content']}
+        Platform: {post['platform']}
+        Voice profile: {voice_profile}
+        
+        Write a comment as Luca. Rules:
+        - Max 3 sentences
+        - Add something the post didn't say
+        - Use a personal angle or experience
+        - No AI vocabulary (see blacklist)
+        - Sound like a real person, not a bot
+        - Variant {i+1} of 3: {'safe' if i==0 else 'bold' if i==1 else 'wild card'}
+        """
+        variants.append(llm.generate(prompt))
+    
+    # Score and pick best
+    scored = [(v, score_comment(v, voice_profile)) for v in variants]
+    best = max(scored, key=lambda x: x[1])
+    
+    # Humanize
+    return humanize(best[0])
+
+def humanize(comment):
+    # Remove em dashes
+    comment = comment.replace('\u2014', '.')
+    comment = comment.replace(' - ', ', ')
+    # Kill arrows  
+    comment = comment.replace('->', 'so')
+    # Strip hedging
+    for phrase in HEDGE_PHRASES:
+        comment = comment.replace(phrase, '')
+    return comment.strip()</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 4: AI Detection -->
+    <section class="step-section" id="step4">
+        <div class="container">
+            <div class="panel">
+                <span class="step-number">// STEP 04</span>
+                <div class="panel-title">AI Detection Pass</div>
+                <p>Every comment runs through an AI detector. The target is "low" risk. If it comes back "medium" or "high," it gets auto-fixed and re-checked.</p>
+                <p>The auto-fix targets three things:</p>
+                <ul class="checklist">
+                    <li><span class="highlight">Parenthetical density.</span> AI loves parentheses. If there's more than one set of parens, remove the extras.</li>
+                    <li><span class="highlight">Specificity check.</span> Vague comments trigger detectors. "I tried this" becomes "I tested this on 3 LinkedIn accounts last month."</li>
+                    <li><span class="highlight">Sentence structure variety.</span> AI tends to write Subject-Verb-Object over and over. Mix it up. Start with a fragment. End with a question sometimes.</li>
+                </ul>
+                <p>If a comment fails 3 rounds of detection, it gets flagged for manual review instead of going into the sheet automatically. This happens maybe 2-3 times per batch.</p>
+
+                <div class="code-toggle" onclick="this.classList.toggle('open')">
+                    <div class="code-toggle-header">detection-pass.py</div>
+                    <div class="code-toggle-body">
+<pre><code>def detection_pass(comment, max_retries=3):
+    for attempt in range(max_retries):
+        result = ai_detector.check(comment)
+        
+        if result['risk'] == 'low':
+            return {'status': 'pass', 'comment': comment}
+        
+        # Auto-fix
+        if result['flags'].get('parenthetical_density'):
+            comment = reduce_parens(comment)
+        if result['flags'].get('low_specificity'):
+            comment = add_specificity(comment)
+        if result['flags'].get('repetitive_structure'):
+            comment = vary_structure(comment)
+    
+    # Failed all retries
+    return {'status': 'manual_review', 'comment': comment}
+
+def reduce_parens(text):
+    """Keep max 1 parenthetical per comment"""
+    # Find all parentheticals, keep first, remove rest
+    ...
+
+def add_specificity(text):
+    """Replace vague claims with specific ones"""
+    # "many people" -> "3 founders I talked to"
+    # "recently" -> "last Tuesday"
+    ...</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 5: Google Sheet -->
+    <section class="step-section" id="step5">
+        <div class="container">
+            <div class="panel">
+                <span class="step-number">// STEP 05</span>
+                <div class="panel-title">Google Sheet Pipeline</div>
+                <p>All approved comments land in a Google Sheet. This is my review dashboard. I open it with my morning coffee, scan through, and approve or edit.</p>
+                <p>The columns are color-coded so I can scan fast:</p>
+
+                <div class="sheet-mock">
+                    <table>
+                        <tr>
+                            <th class="sh-date">Date</th>
+                            <th class="sh-priority">Priority</th>
+                            <th class="sh-author">Author</th>
+                            <th class="sh-post">Post</th>
+                            <th class="sh-link">Link</th>
+                            <th class="sh-draft">Comment Draft</th>
+                            <th class="sh-done">Done</th>
+                            <th class="sh-notes">Notes</th>
+                        </tr>
+                        <tr>
+                            <td>2026-02-14</td>
+                            <td style="color:var(--red)">HIGH</td>
+                            <td>@sarahcodes</td>
+                            <td>Why I stopped using Zapier...</td>
+                            <td style="color:var(--cyan)">link</td>
+                            <td style="color:var(--yellow)">"Switched to n8n last year for the same reason. The webhook reliability alone..."</td>
+                            <td style="color:var(--green)">[ ]</td>
+                            <td style="color:#666">10k followers, SaaS niche</td>
+                        </tr>
+                        <tr>
+                            <td>2026-02-14</td>
+                            <td style="color:var(--yellow)">MED</td>
+                            <td>u/startupguy</td>
+                            <td>Best AI tools for solo founders?</td>
+                            <td style="color:var(--cyan)">link</td>
+                            <td style="color:var(--yellow)">"Running 3 AI agents that handle my content, outreach, and analytics. Total cost is..."</td>
+                            <td style="color:var(--green)">[ ]</td>
+                            <td style="color:#666">r/SaaS, 45 upvotes</td>
+                        </tr>
+                        <tr>
+                            <td>2026-02-14</td>
+                            <td style="color:var(--green)">LOW</td>
+                            <td>@marketer_mike</td>
+                            <td>Hot take: AI content is killing...</td>
+                            <td style="color:var(--cyan)">link</td>
+                            <td style="color:var(--yellow)">"The problem isn't AI content, it's AI content without a voice profile..."</td>
+                            <td style="color:var(--green)">[ ]</td>
+                            <td style="color:#666">Contrarian angle</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <p>Priority is based on: author follower count, post engagement, niche relevance. HIGH means "this person is a potential lead or has a big audience." I always do those first.</p>
+
+                <div class="code-toggle" onclick="this.classList.toggle('open')">
+                    <div class="code-toggle-header">push-to-sheet.py</div>
+                    <div class="code-toggle-body">
+<pre><code>def push_to_sheet(comments, sheet_id):
+    rows = []
+    for c in comments:
+        rows.append([
+            c['date'],
+            c['priority'],      # HIGH/MED/LOW
+            c['author'],
+            c['post_title'][:50],
+            c['post_url'],
+            c['comment_draft'],
+            'FALSE',            # Done checkbox
+            c['notes']
+        ])
+    
+    sheets_api.append(
+        spreadsheet_id=sheet_id,
+        range='Comments!A:H',
+        values=rows
+    )
+    
+    # Apply conditional formatting
+    # RED for HIGH priority
+    # YELLOW for MED
+    # GREEN for LOW
+    apply_formatting(sheet_id, rows)</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STEP 6: Daily Review -->
+    <section class="step-section" id="step6">
+        <div class="container">
+            <div class="panel">
+                <span class="step-number">// STEP 06</span>
+                <div class="panel-title">Daily Review (5 min)</div>
+                <p>This is the human-in-the-loop part. Every morning, I spend 5 minutes on the sheet:</p>
+                <ul class="checklist">
+                    <li>Scan HIGH priority first. Edit if needed, approve.</li>
+                    <li>Quick pass on MED. Most are good to go as-is.</li>
+                    <li>LOW priority: approve all unless something looks off.</li>
+                    <li>Post the comments. (This part is still manual on purpose. I want the final click to be mine.)</li>
+                    <li>Mark as Done. Track which ones get replies or engagement.</li>
+                </ul>
+                <p>When someone replies to my comment, that's a <span class="highlight">warm signal</span>. The system flags it and adds them to my outreach pipeline. A reply means they already know my name and had a positive interaction. That's worth 10x a cold DM.</p>
+                <p>I track engagement weekly: reply rate, profile visits from comments, DMs received. The data feeds back into query tuning. If posts from r/SaaS get 3x more replies than r/Entrepreneur, I shift the query weight.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="step-section" id="results">
+        <div class="container">
+            <div class="panel" style="border-color: var(--green); box-shadow: var(--bevel), 0 0 20px rgba(93,186,59,0.15);">
+                <span class="step-number">// RESULTS</span>
+                <div class="panel-title">What This Gets Me</div>
+                <div class="hero-stats" style="justify-content: flex-start; margin-bottom: 24px;">
+                    <div class="stat"><span class="stat-value">25</span><span class="stat-label">comments/day</span></div>
+                    <div class="stat"><span class="stat-value">3</span><span class="stat-label">platforms</span></div>
+                    <div class="stat"><span class="stat-value">~$2</span><span class="stat-label">API cost/day</span></div>
+                    <div class="stat"><span class="stat-value">5m</span><span class="stat-label">daily effort</span></div>
+                </div>
+                <p>But the numbers that actually matter:</p>
+                <ul class="checklist">
+                    <li><span class="green">Warm signals:</span> 8-12 reply-back conversations per week. These people already know me.</li>
+                    <li><span class="green">Profile visits:</span> 3-5x increase since starting this. Comments drive more profile traffic than posts do.</li>
+                    <li><span class="green">DM openers:</span> "Hey, saw your comment on [post]" is the warmest intro that exists.</li>
+                    <li><span class="green">Content ideas:</span> Reading 25+ posts daily in my niche gives me endless content angles.</li>
+                    <li><span class="green">Pipeline feed:</span> Every warm signal goes into my lead pipeline. No cold outreach needed for these.</li>
+                </ul>
+                <p>Total cost: about $60/month in API calls. Total time: 30 minutes to set up, 5 minutes daily to review. That's it.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRY IT -->
+    <section class="step-section">
+        <div class="container">
+            <div class="try-it">
+                <h2>Try It Yourself</h2>
+                <p>Paste a post URL below and see what kind of comment the system would generate. (This is a static demo, not hitting a real API.)</p>
+                <input type="text" id="tryItInput" placeholder="https://linkedin.com/posts/someone-interesting...">
+                <button class="try-it-btn" onclick="showDemo()">GENERATE COMMENT</button>
+                <div class="try-it-result" id="tryItResult">
+                    <div style="color: var(--cyan); margin-bottom: 8px; font-size: 10px; font-family: 'Press Start 2P', monospace;">// GENERATED COMMENT (variant 2 of 3)</div>
+                    <div style="margin-bottom: 12px;">"I built something similar last month. The part that took the longest wasn't the automation, it was getting the voice right. Spent 2 hours writing a 'how I actually talk' doc and it made everything 10x better. What model are you using for generation?"</div>
+                    <div style="color: #666; font-size: 10px; margin-top: 8px; border-top: 1px solid #222; padding-top: 8px;">
+                        <span style="color: var(--green);">AI Detection: LOW RISK</span> | 
+                        <span style="color: var(--yellow);">Priority: MED</span> | 
+                        <span style="color: var(--cyan);">Platform: LinkedIn</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section" id="cta">
+        <div class="container">
+            <div class="panel" style="border-color: var(--green);">
+                <div class="panel-title" style="font-size: 16px;">Want This Running in 60 Seconds?</div>
+                <p style="max-width: 600px; margin: 0 auto 24px;">This process takes 30 minutes to set up and 5 minutes daily to review. Or you can get it pre-configured, voice-profiled, and running out of the box.</p>
+                <p style="margin-bottom: 32px;">Claw4Growth is an OpenClaw instance pre-loaded with this entire pipeline. Engagement comments, content generation, lead tracking. All of it.</p>
+                <a href="https://claw4growth.com" class="cta-btn" target="_blank">GET CLAW4GROWTH</a>
+                <div class="spots-left">4 SPOTS LEFT</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>Built by <a href="https://www.linkedin.com/in/luca-vizzielli" target="_blank">Luca Vizzielli</a> · <a href="https://lucavizzielli.com" target="_blank">lucavizzielli.com</a> · <a href="https://claw4growth.com" target="_blank">claw4growth.com</a></p>
+    </footer>
+</div>
+
+<script>
+// Terminal animation
+const terminalLines = [
+    { time: '05:30:00', text: 'Starting engagement scan...', type: 'status' },
+    { time: '05:30:02', text: 'Querying LinkedIn MCP (6 niches)...', type: 'status' },
+    { time: '05:30:15', text: 'LinkedIn: 15 posts found', type: 'status' },
+    { time: '05:30:18', text: 'Querying X cached reader...', type: 'status' },
+    { time: '05:30:28', text: 'X: 10 posts found', type: 'status' },
+    { time: '05:30:30', text: 'Querying Reddit (site:reddit.com)...', type: 'status' },
+    { time: '05:30:42', text: 'Reddit: 10 posts found. Total: 35 posts', type: 'status' },
+    { time: '05:31:00', text: 'Deduplicating... 30 unique posts', type: 'status' },
+    { time: '05:35:00', text: 'Generating 3 variants per post...', type: 'status' },
+    { time: '05:35:45', text: '25/30 comments generated (5 low-relevance skipped)', type: 'status' },
+    { time: '05:40:00', text: 'Humanization pass: removing AI patterns...', type: 'warn' },
+    { time: '05:40:12', text: 'Blacklist check: 2 comments flagged, auto-fixed', type: 'warn' },
+    { time: '05:40:30', text: 'AI detection pass: 22 LOW, 3 MEDIUM...', type: 'status' },
+    { time: '05:40:45', text: 'Auto-fixing 3 MEDIUM comments...', type: 'warn' },
+    { time: '05:41:00', text: 'Re-check: 25 LOW risk. All clear.', type: 'status' },
+    { time: '05:45:00', text: 'Pushing 25 comments to Google Sheet...', type: 'status' },
+    { time: '05:45:05', text: 'Done. Sheet updated. Ready for review.', type: 'status' },
+];
+
+function animateTerminal() {
+    const body = document.getElementById('terminalBody');
+    body.innerHTML = '';
+    terminalLines.forEach((line, i) => {
+        setTimeout(() => {
+            const div = document.createElement('div');
+            div.className = 'terminal-line';
+            div.style.animationDelay = '0s';
+            const typeClass = line.type === 'warn' ? 'warn' : 'status';
+            div.innerHTML = `<span class="time">[${line.time}]</span> <span class="${typeClass}">${line.text}</span>`;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        }, i * 800);
+    });
+    // Loop
+    setTimeout(animateTerminal, terminalLines.length * 800 + 3000);
+}
+animateTerminal();
+
+// Progress tracker
+const sections = ['intro','step1','step2','step3','step4','step5','step6','results','cta'];
+const dots = document.querySelectorAll('.progress-dot');
+
+dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+        const target = dot.dataset.target;
+        document.getElementById(target).scrollIntoView({ behavior: 'smooth' });
+    });
+});
+
+function updateProgress() {
+    const scrollPos = window.scrollY + window.innerHeight / 2;
+    sections.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const top = el.offsetTop;
+        const bottom = top + el.offsetHeight;
+        if (scrollPos >= top && scrollPos < bottom) {
+            dots.forEach(d => d.classList.remove('active'));
+            if (dots[i]) dots[i].classList.add('active');
+        }
+    });
+}
+window.addEventListener('scroll', updateProgress);
+updateProgress();
+
+// Try it demo
+function showDemo() {
+    const input = document.getElementById('tryItInput').value;
+    const result = document.getElementById('tryItResult');
+    if (input.trim().length > 0) {
+        result.classList.add('visible');
+    } else {
+        // Show anyway with placeholder
+        document.getElementById('tryItInput').value = 'https://linkedin.com/posts/example-post-about-ai-agents';
+        result.classList.add('visible');
+    }
+}
+</script>
+
+</body>
+</html>
